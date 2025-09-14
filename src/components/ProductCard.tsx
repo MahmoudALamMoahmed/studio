@@ -26,24 +26,26 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handlePurchase = async () => {
     setIsLoading(true);
     try {
-      const { redirectUrl, ...error } = await createCheckoutSession(product.id);
+      const result = await createCheckoutSession(product.id);
 
-      if (redirectUrl) {
-        window.location.href = redirectUrl;
+      if (result?.redirectUrl) {
+        // توجيه المستخدم لصفحة Kashier
+        window.location.href = result.redirectUrl;
       } else {
-        throw new Error( (error as any).error || 'فشل في إنشاء رابط الدفع.');
+        throw new Error('فشل في إنشاء رابط الدفع.');
       }
     } catch (error) {
       console.error("Purchase error:", error);
-      const errorMessage = error instanceof Error ? error.message : 'يرجى المحاولة مرة أخرى.';
-      
+      const errorMessage =
+        error instanceof Error ? error.message : 'يرجى المحاولة مرة أخرى.';
+
       toast({
         variant: 'destructive',
         title: 'حدث خطأ',
         description: errorMessage,
       });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -68,7 +70,11 @@ export default function ProductCard({ product }: ProductCardProps) {
         </p>
       </CardContent>
       <CardFooter className="p-6 pt-0">
-        <Button onClick={handlePurchase} disabled={isLoading} className="w-full text-lg py-6">
+        <Button
+          onClick={handlePurchase}
+          disabled={isLoading}
+          className="w-full text-lg py-6"
+        >
           {isLoading ? (
             <div className="flex items-center justify-center gap-2">
               <Loader2 className="h-5 w-5 animate-spin" />
