@@ -33,29 +33,29 @@ export default function ProductCard({ product }: ProductCardProps) {
         body: JSON.stringify({ productId: product.id }),
       });
 
-      const contentType = response.headers.get("content-type");
       if (!response.ok) {
         let errorMessage = 'فشل في إنشاء رابط الدفع';
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-          try {
+        try {
+            // Try to parse as JSON first
             const errorData = await response.json();
             errorMessage = errorData.message || errorMessage;
-          } catch (e) {
-            // The server said it was JSON, but it wasn't.
-            console.error("Failed to parse JSON error response", e);
-            errorMessage = await response.text();
-          }
-        } else {
-           const errorText = await response.text();
-           console.error("Non-JSON error response:", errorText);
-           // In this case, maybe the text IS the error message.
-           if(errorText) errorMessage = errorText;
+        } catch (e) {
+            // If it's not JSON, it might be HTML or plain text
+            const errorText = await response.text();
+            console.error("Non-JSON error response:", errorText);
+            // We can check if the text contains a specific title or message
+            // but for now, we'll use a generic message as the text might be a full HTML page.
+            errorMessage = 'حدث خطأ غير متوقع من الخادم.';
         }
         throw new Error(errorMessage);
       }
       
       const data = await response.json();
-      window.location.href = data.paymentUrl;
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+      } else {
+        throw new Error('لم يتم العثور على رابط الدفع في الاستجابة.');
+      }
 
     } catch (error) {
       console.error(error);

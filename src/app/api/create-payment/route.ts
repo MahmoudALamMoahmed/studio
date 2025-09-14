@@ -5,7 +5,7 @@ import { randomUUID } from 'crypto';
 
 const KASHIER_API_KEY = "73342d90-d195-41a6-b260-1ea6cbf380bb";
 const KASHIER_MERCHANT_ID = "MID-37646-41";
-const KASHIER_API_URL = "https://api.kashier.io/v1.0/checkout/request";
+const KASHIER_API_URL = "https://9000-firebase-studio-1757858785812.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev";
 
 export async function POST(request: NextRequest) {
   try {
