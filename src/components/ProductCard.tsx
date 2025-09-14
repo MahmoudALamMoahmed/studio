@@ -33,24 +33,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         body: JSON.stringify({ productId: product.id }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        let errorMessage = 'فشل في إنشاء رابط الدفع';
-        try {
-            // Try to parse as JSON first
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
-        } catch (e) {
-            // If it's not JSON, it might be HTML or plain text
-            const errorText = await response.text();
-            console.error("Non-JSON error response:", errorText);
-            // We can check if the text contains a specific title or message
-            // but for now, we'll use a generic message as the text might be a full HTML page.
-            errorMessage = 'حدث خطأ غير متوقع من الخادم.';
-        }
-        throw new Error(errorMessage);
+        throw new Error(data.message || 'فشل في إنشاء رابط الدفع');
       }
       
-      const data = await response.json();
       if (data.paymentUrl) {
         window.location.href = data.paymentUrl;
       } else {
@@ -59,10 +47,20 @@ export default function ProductCard({ product }: ProductCardProps) {
 
     } catch (error) {
       console.error(error);
+      let errorMessage = 'يرجى المحاولة مرة أخرى.';
+      if (error instanceof Error) {
+        // Handle JSON parsing error specifically
+        if (error.message.includes('Unexpected token')) {
+            errorMessage = 'حدث خطأ غير متوقع من الخادم. لم يتمكن من معالجة الرد.';
+        } else {
+            errorMessage = error.message;
+        }
+      }
+      
       toast({
         variant: 'destructive',
         title: 'حدث خطأ',
-        description: error instanceof Error ? error.message : 'يرجى المحاولة مرة أخرى.',
+        description: errorMessage,
       });
       setIsLoading(false);
     }
