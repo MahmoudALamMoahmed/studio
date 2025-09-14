@@ -39,7 +39,7 @@ export async function createCheckoutSession(productId: string) {
     amount: amount,
     currency: currency,
     hash: signature,
-    successUrl: `${baseUrl}/success?orderId=${orderId}`,
+    successUrl: `${baseUrl}/success`,
     failureUrl: `${baseUrl}/cancel`,
     display: 'ar',
     mode: "test",
