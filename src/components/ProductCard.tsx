@@ -33,12 +33,20 @@ export default function ProductCard({ product }: ProductCardProps) {
         body: JSON.stringify({ productId: product.id }),
       });
 
-      const data = await response.json();
-
+      const contentType = response.headers.get("content-type");
       if (!response.ok) {
-        throw new Error(data.message || 'فشل في إنشاء رابط الدفع');
+        let errorMessage = 'فشل في إنشاء رابط الدفع';
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } else {
+           const errorText = await response.text();
+           console.error("Non-JSON error response:", errorText);
+        }
+        throw new Error(errorMessage);
       }
       
+      const data = await response.json();
       window.location.href = data.paymentUrl;
 
     } catch (error) {
