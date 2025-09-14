@@ -37,11 +37,19 @@ export default function ProductCard({ product }: ProductCardProps) {
       if (!response.ok) {
         let errorMessage = 'فشل في إنشاء رابط الدفع';
         if (contentType && contentType.indexOf("application/json") !== -1) {
-          const errorData = await response.json();
-          errorMessage = errorData.message || errorMessage;
+          try {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (e) {
+            // The server said it was JSON, but it wasn't.
+            console.error("Failed to parse JSON error response", e);
+            errorMessage = await response.text();
+          }
         } else {
            const errorText = await response.text();
            console.error("Non-JSON error response:", errorText);
+           // In this case, maybe the text IS the error message.
+           if(errorText) errorMessage = errorText;
         }
         throw new Error(errorMessage);
       }
