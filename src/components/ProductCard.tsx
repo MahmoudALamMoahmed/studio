@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import type { Product } from '@/lib/products';
+import { createCheckoutSession } from '@/app/actions';
 
 interface ProductCardProps {
   product: Product;
@@ -25,36 +26,13 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handlePurchase = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/create-payment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId: product.id }),
-      });
+      const { redirectUrl, ...error } = await createCheckoutSession(product.id);
 
-      if (!response.ok) {
-        // Attempt to parse the error response as JSON first
-        const contentType = response.headers.get("content-type");
-        if (contentType && contentType.indexOf("application/json") !== -1) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        } else {
-            // If not JSON, it might be HTML or plain text
-            const errorText = await response.text();
-            console.error("Non-JSON error response:", errorText);
-            throw new Error('حدث خطأ غير متوقع من الخادم.');
-        }
-      }
-      
-      const data = await response.json();
-
-      if (data.paymentUrl) {
-        window.location.href = data.paymentUrl;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
       } else {
-        throw new Error('لم يتم العثور على رابط الدفع في الاستجابة.');
+        throw new Error( (error as any).error || 'فشل في إنشاء رابط الدفع.');
       }
-
     } catch (error) {
       console.error("Purchase error:", error);
       const errorMessage = error instanceof Error ? error.message : 'يرجى المحاولة مرة أخرى.';
