@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { products } from '@/lib/products';
+import { randomUUID } from 'crypto';
 
 const KASHIER_API_KEY = "73342d90-d195-41a6-b260-1ea6cbf380bb";
 const KASHIER_MERCHANT_ID = "MID-37646-41";
@@ -24,8 +25,8 @@ export async function POST(request: NextRequest) {
     const headersList = headers();
     const origin = headersList.get('origin') || 'http://localhost:9002';
     
-    // Using timestamp for a simple unique order ID for this demo
-    const orderId = `${product.id}-${Date.now()}`;
+    // Using crypto.randomUUID for a unique order ID to avoid hydration issues
+    const orderId = `${product.id}-${randomUUID()}`;
 
     const paymentData = {
       merchantId: KASHIER_MERCHANT_ID,
