@@ -1,5 +1,3 @@
-# Firebase Studio
+# KashierPay
 
-This is a NextJS starter in Firebase Studio.
-
-To get started, take a look at src/app/page.tsx.
+A Next.js application to demonstrate payment integration with Kashier's Hosted Payment Page.

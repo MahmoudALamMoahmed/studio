@@ -1,3 +1,22 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "kashier1",
+      "description": "A handmade pottery vase",
+      "imageUrl": "https://picsum.photos/seed/kashier1/600/400",
+      "imageHint": "pottery vase"
+    },
+    {
+      "id": "kashier2",
+      "description": "A bag of artisanal coffee beans",
+      "imageUrl": "https://picsum.photos/seed/kashier2/600/400",
+      "imageHint": "coffee beans"
+    },
+    {
+      "id": "kashier3",
+      "description": "A colorful woven scarf",
+      "imageUrl": "https://picsum.photos/seed/kashier3/600/400",
+      "imageHint": "woven scarf"
+    }
+  ]
 }
