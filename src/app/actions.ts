@@ -3,12 +3,12 @@
 import { Product, products } from '@/lib/products';
 import { randomBytes } from 'crypto';
 
-export async function createCheckoutSession(product: Product) {
+export async function createCheckoutSession(productId: string) {
   if (!process.env.KASHIER_API_KEY || !process.env.KASHIER_MERCHANT_ID) {
     throw new Error('Kashier API Key or Merchant ID is not configured.');
   }
 
-  const selectedProduct = products.find((p) => p.id === product.id);
+  const selectedProduct = products.find((p) => p.id === productId);
   if (!selectedProduct) {
     throw new Error('Product not found.');
   }
