@@ -42,7 +42,7 @@ export async function createCheckoutSession(productId: string) {
     successUrl: `${baseUrl}/success?orderId=${orderId}`,
     failureUrl: `${baseUrl}/cancel`,
     display: 'ar',
-    mode: "redirect",
+    mode: "test",
   });
 
   const redirectUrl = `${checkoutUrl}?${queryParams.toString()}`;
