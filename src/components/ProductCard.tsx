@@ -33,12 +33,22 @@ export default function ProductCard({ product }: ProductCardProps) {
         body: JSON.stringify({ productId: product.id }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || 'فشل في إنشاء رابط الدفع');
+        // Attempt to parse the error response as JSON first
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        } else {
+            // If not JSON, it might be HTML or plain text
+            const errorText = await response.text();
+            console.error("Non-JSON error response:", errorText);
+            throw new Error('حدث خطأ غير متوقع من الخادم.');
+        }
       }
       
+      const data = await response.json();
+
       if (data.paymentUrl) {
         window.location.href = data.paymentUrl;
       } else {
@@ -46,23 +56,16 @@ export default function ProductCard({ product }: ProductCardProps) {
       }
 
     } catch (error) {
-      console.error(error);
-      let errorMessage = 'يرجى المحاولة مرة أخرى.';
-      if (error instanceof Error) {
-        // Handle JSON parsing error specifically
-        if (error.message.includes('Unexpected token')) {
-            errorMessage = 'حدث خطأ غير متوقع من الخادم. لم يتمكن من معالجة الرد.';
-        } else {
-            errorMessage = error.message;
-        }
-      }
+      console.error("Purchase error:", error);
+      const errorMessage = error instanceof Error ? error.message : 'يرجى المحاولة مرة أخرى.';
       
       toast({
         variant: 'destructive',
         title: 'حدث خطأ',
         description: errorMessage,
       });
-      setIsLoading(false);
+    } finally {
+        setIsLoading(false);
     }
   };
 

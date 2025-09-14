@@ -21,9 +21,6 @@ export async function POST(request: NextRequest) {
     if (!product) {
       return NextResponse.json({ message: 'المنتج غير موجود' }, { status: 404 });
     }
-
-    const headersList = headers();
-    const origin = headersList.get('origin') || 'http://localhost:9002';
     
     // Using crypto.randomUUID for a unique order ID to avoid hydration issues
     const orderId = `${product.id}-${randomUUID()}`;
@@ -33,8 +30,8 @@ export async function POST(request: NextRequest) {
       amount: product.price.toString(),
       currency: "EGP",
       orderId: orderId,
-      successUrl: `${origin}/success?orderId=${orderId}`,
-      failureUrl: `${origin}/cancel`,
+      successUrl: `https://9000-firebase-studio-1757858785812.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev/success?orderId=${orderId}`,
+      failureUrl: `https://9000-firebase-studio-1757858785812.cluster-fbfjltn375c6wqxlhoehbz44sk.cloudworkstations.dev/cancel`,
       display: "ar",
       mode: "redirect"
     };
