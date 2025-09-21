@@ -2,7 +2,6 @@
 
 import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { verifyTransaction } from '@/app/actions';
 import { Loader2 } from 'lucide-react';
 
 function VerificationComponent() {
@@ -14,17 +13,20 @@ function VerificationComponent() {
     const transactionId = searchParams.get('transactionId');
 
     if (!orderId && !transactionId) {
-      // If no ID is present, redirect to home
       router.replace('/');
       return;
     }
 
     const checkTransaction = async () => {
       try {
-        const result = await verifyTransaction(orderId, transactionId);
+        const resp = await fetch(
+          `/api/payment/verify?orderId=${orderId ?? ''}&transactionId=${transactionId ?? ''}`
+        );
+        const result = await resp.json();
+
         const params = new URLSearchParams();
-        if(result.orderId) params.set('orderId', result.orderId);
-        if(result.message) params.set('message', result.message);
+        if (result.orderId) params.set('orderId', result.orderId);
+        if (result.message) params.set('message', result.message);
 
         if (result.verified) {
           router.replace(`/success?${params.toString()}`);
@@ -34,7 +36,7 @@ function VerificationComponent() {
       } catch (error) {
         console.error('Verification failed', error);
         const params = new URLSearchParams();
-        if(orderId) params.set('orderId', orderId);
+        if (orderId) params.set('orderId', orderId);
         params.set('message', 'حدث خطأ أثناء التحقق من الدفع.');
         router.replace(`/cancel?${params.toString()}`);
       }
@@ -55,14 +57,16 @@ function VerificationComponent() {
 }
 
 export default function CallbackPage() {
-    return (
-        <Suspense fallback={
-            <div className="container mx-auto flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-4 px-4 py-8 text-center">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <h1 className="text-2xl font-headline">جاري التحميل...</h1>
-            </div>
-        }>
-            <VerificationComponent />
-        </Suspense>
-    )
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center gap-4 px-4 py-8 text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <h1 className="text-2xl font-headline">جاري التحميل...</h1>
+        </div>
+      }
+    >
+      <VerificationComponent />
+    </Suspense>
+  );
 }
