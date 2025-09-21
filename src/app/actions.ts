@@ -1,38 +1,49 @@
 'use server';
 
-import { Product } from '@/lib/products';
+import { Product, products } from '@/lib/products';
 import { randomBytes } from 'crypto';
 
-export async function createCheckoutSession(productId: string) {
+export async function createCheckoutSession(product: Product) {
   if (!process.env.KASHIER_API_KEY || !process.env.KASHIER_MERCHANT_ID) {
     throw new Error('Kashier API Key or Merchant ID is not configured.');
   }
-  
+
+  const selectedProduct = products.find((p) => p.id === product.id);
+  if (!selectedProduct) {
+    throw new Error('Product not found.');
+  }
+
   const merchantId = process.env.KASHIER_MERCHANT_ID;
   const apiKey = process.env.KASHIER_API_KEY;
   const orderId = `order-${randomBytes(8).toString('hex')}`;
-  // For verification, we need to pass the actual product price, not just the ID.
-  // We'll pass it through the verification URL.
-  const path = `/?payment=${merchantId}.${orderId}.{amount}.{currency}`;
-  
+  const amount = selectedProduct.price.toFixed(2);
+  const currency = selectedProduct.currency;
+
+  // ✅ Kashier docs: correct path format for hash
+  const path = `/?payment=${merchantId}.${orderId}.${amount}.${currency}`;
+
   const crypto = await import('crypto');
-  const signature = crypto.createHmac('sha256', apiKey).update(path).digest('hex');
+  const signature = crypto
+    .createHmac('sha256', apiKey)
+    .update(path)
+    .digest('hex');
 
   const baseUrl = 'https://checkout.kashier.io';
   const queryParams = new URLSearchParams({
     merchantId: merchantId,
     orderId: orderId,
-    // amount and currency will be set on the client side in the final URL
+    amount: amount,
+    currency: currency,
     hash: signature,
-    // Use the correct redirect parameters as per Kashier's documentation
     merchantRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/success`,
     failureRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/cancel`,
-    redirect: 'true',
-    display: 'ar',
-    mode: 'test',
+    redirect: 'true', // Automatically redirect to Kashier's page
+    display: 'ar', // To display the payment page in Arabic
+    store: selectedProduct.name,
+    mode: 'test', // ✅ Test Mode
   });
 
-  const redirectUrlTemplate = `${baseUrl}?${queryParams.toString()}`;
+  const redirectUrl = `${baseUrl}?${queryParams.toString()}`;
 
-  return { redirectUrlTemplate };
+  return { redirectUrl };
 }
