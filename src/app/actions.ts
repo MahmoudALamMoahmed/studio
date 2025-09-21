@@ -2,6 +2,7 @@
 
 import { Product, products } from '@/lib/products';
 import { randomBytes } from 'crypto';
+import { redirect } from 'next/navigation';
 
 export async function createCheckoutSession(product: Product) {
   if (!process.env.KASHIER_API_KEY || !process.env.KASHIER_MERCHANT_ID) {
@@ -25,7 +26,7 @@ export async function createCheckoutSession(product: Product) {
   const signature = crypto.createHmac('sha256', apiKey).update(path).digest('hex');
 
   const baseUrl = 'https://checkout.kashier.io';
-  const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/payment/callback`;
+  const callbackUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/callback`; // 🔥 خلي الكولباك يروح API
 
   const queryParams = new URLSearchParams({
     merchantId: merchantId,
@@ -34,7 +35,7 @@ export async function createCheckoutSession(product: Product) {
     currency: currency,
     hash: signature,
     merchantRedirect: callbackUrl,
-    failureRedirect: callbackUrl, 
+    failureRedirect: callbackUrl,
     redirect: 'true',
     display: 'ar',
     store: selectedProduct.name,
@@ -46,7 +47,8 @@ export async function createCheckoutSession(product: Product) {
   return { redirectUrl };
 }
 
-export async function verifyTransaction(orderId: string | null, transactionId: string | null): Promise<{verified: boolean; status: string, message: string, orderId?: string}> {
+// 👇 هذي هنستدعيها من الكولباك API
+export async function verifyTransaction(orderId: string | null, transactionId: string | null) {
   if (!process.env.KASHIER_SECERET_KEY) {
     throw new Error("Kashier API Key is not configured.");
   }
@@ -58,8 +60,7 @@ export async function verifyTransaction(orderId: string | null, transactionId: s
   if (transactionId) {
     url = `https://test-api.kashier.io/v2/aggregator/transactions/${transactionId}`;
   } else {
-    // Fallback to orderId if transactionId is not present
-    url = `https://test-api.kashier.io/v2/aggregator/transactions?merchantOrderId=${orderId}`;
+    url = `https://test-api.kashier.io/v2/aggregator/transactions?search=${orderId}`;
   }
   
   try {
@@ -78,23 +79,25 @@ export async function verifyTransaction(orderId: string | null, transactionId: s
     }
 
     const data = await resp.json();
-    
     const txn = Array.isArray(data?.body) && data.body.length > 0 ? data.body[0] : data.body || null;
 
     if (!txn) {
-      return { verified: false, status: 'NOT_FOUND', message: "لم يتم العثور على المعاملة.", orderId: orderId ?? undefined};
+      redirect(`/payment/failed?orderId=${orderId ?? ''}&status=NOT_FOUND`);
     }
     
     const status = txn.paymentStatus?.toUpperCase() || txn.status?.toUpperCase() || txn.lastStatus?.toUpperCase();
     const successKeywords = ["SUCCESS", "APPROVED", "CAPTURED", "COMPLETED"];
     const verified = successKeywords.includes(status);
-    const message = verified ? 'تم الدفع بنجاح' : (txn.response?.message || 'فشلت عملية الدفع');
 
-    return { verified, status, message, orderId: txn.merchantOrderId };
+    if (verified) {
+      redirect(`/payment/success?orderId=${txn.merchantOrderId}`);
+    } else {
+      redirect(`/payment/failed?orderId=${txn.merchantOrderId}&status=${status}`);
+    }
 
   } catch (error) {
     console.error("Verification failed:", error);
     const message = error instanceof Error ? error.message : "حدث خطأ أثناء التحقق من المعاملة";
-    return { verified: false, status: 'ERROR', message, orderId: orderId ?? undefined };
+    redirect(`/payment/failed?orderId=${orderId ?? ''}&status=ERROR&message=${encodeURIComponent(message)}`);
   }
 }
