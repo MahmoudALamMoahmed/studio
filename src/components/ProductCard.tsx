@@ -26,23 +26,10 @@ export default function ProductCard({ product }: ProductCardProps) {
   const handlePurchase = async () => {
     setIsLoading(true);
     try {
-      const result = await createCheckoutSession(product.id);
+      const result = await createCheckoutSession(product);
 
-      if (result?.redirectUrlTemplate) {
-        // Replace placeholders with actual product details
-        const finalUrl = result.redirectUrlTemplate
-          .replace('{amount}', product.price.toFixed(2))
-          .replace('{currency}', product.currency)
-          .replace('{store}', encodeURIComponent(product.name));
-        
-        // Add store and amount to the query params for the final URL
-        const url = new URL(finalUrl);
-        url.searchParams.set('amount', product.price.toFixed(2));
-        url.searchParams.set('currency', product.currency);
-        url.searchParams.set('store', product.name);
-
-
-        window.location.href = url.toString();
+      if (result?.redirectUrl) {
+        window.location.href = result.redirectUrl;
       } else {
         throw new Error('فشل في إنشاء رابط الدفع.');
       }
