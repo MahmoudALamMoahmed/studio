@@ -90,14 +90,14 @@ export async function verifyTransaction(orderId: string | null, transactionId: s
     const verified = successKeywords.includes(status);
 
     if (verified) {
-      redirect(`/payment/success?orderId=${txn.merchantOrderId}`);
+      redirect(`/success?orderId=${txn.merchantOrderId}`);
     } else {
-      redirect(`/payment/failed?orderId=${txn.merchantOrderId}&status=${status}`);
+      redirect(`/cancel?orderId=${txn.merchantOrderId}&status=${status}`);
     }
 
   } catch (error) {
     console.error("Verification failed:", error);
     const message = error instanceof Error ? error.message : "حدث خطأ أثناء التحقق من المعاملة";
-    redirect(`/payment/failed?orderId=${orderId ?? ''}&status=ERROR&message=${encodeURIComponent(message)}`);
+    redirect(`/cancel?orderId=${orderId ?? ''}&status=ERROR&message=${encodeURIComponent(message)}`);
   }
 }
