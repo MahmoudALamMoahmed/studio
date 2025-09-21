@@ -47,7 +47,7 @@ export async function createCheckoutSession(product: Product) {
 }
 
 export async function verifyTransaction(orderId: string | null, transactionId: string | null): Promise<{verified: boolean; status: string, message: string, orderId?: string}> {
-  if (!process.env.KASHIER_API_KEY) {
+  if (!process.env.KASHIER_SECERET_KEY) {
     throw new Error("Kashier API Key is not configured.");
   }
   if (!orderId && !transactionId) {
@@ -66,7 +66,7 @@ export async function verifyTransaction(orderId: string | null, transactionId: s
     const resp = await fetch(url, {
       method: "GET",
       headers: {
-        Authorization: process.env.KASHIER_API_KEY,
+        Authorization: process.env.KASHIER_SECERET_KEY,
         Accept: "application/json"
       }
     });
