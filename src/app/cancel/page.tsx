@@ -19,7 +19,7 @@ function CancelContent() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
             <XCircle className="h-10 w-10 text-red-600 dark:text-red-400" />
           </div>
-          <CardTitle className="pt-4 text-2xl font-headline">تم إلغاء الدفع</CardTitle>
+          <CardTitle className="pt-4 text-2xl font-headline">فشل الدفع</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">

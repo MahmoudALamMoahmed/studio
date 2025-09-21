@@ -9,6 +9,8 @@ import { Suspense } from "react";
 function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId");
+  const message = searchParams.get('message') || 'شكراً لك على شرائك. سيتم معالجة طلبك قريباً.';
+
 
   return (
     <div className="container mx-auto flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-8">
@@ -21,7 +23,7 @@ function SuccessContent() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            شكراً لك على شرائك. سيتم معالجة طلبك قريباً.
+            {message}
           </p>
           {orderId && (
             <div className="mt-4 rounded-md bg-muted p-3 text-sm">
