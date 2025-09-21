@@ -28,9 +28,21 @@ export default function ProductCard({ product }: ProductCardProps) {
     try {
       const result = await createCheckoutSession(product.id);
 
-      if (result?.redirectUrl) {
-        // توجيه المستخدم لصفحة Kashier
-        window.location.href = result.redirectUrl;
+      if (result?.redirectUrlTemplate) {
+        // Replace placeholders with actual product details
+        const finalUrl = result.redirectUrlTemplate
+          .replace('{amount}', product.price.toFixed(2))
+          .replace('{currency}', product.currency)
+          .replace('{store}', encodeURIComponent(product.name));
+        
+        // Add store and amount to the query params for the final URL
+        const url = new URL(finalUrl);
+        url.searchParams.set('amount', product.price.toFixed(2));
+        url.searchParams.set('currency', product.currency);
+        url.searchParams.set('store', product.name);
+
+
+        window.location.href = url.toString();
       } else {
         throw new Error('فشل في إنشاء رابط الدفع.');
       }
