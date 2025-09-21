@@ -24,9 +24,9 @@ export async function createCheckoutSession(productId: string) {
     orderId: orderId,
     // amount and currency will be set on the client side in the final URL
     hash: signature,
-    // Redirect to a single verification page instead of separate success/failure pages
-    merchantRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/verify-payment?orderId=${orderId}`,
-    failureRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/verify-payment?orderId=${orderId}`, // Also redirect to verify
+    // Use the correct redirect parameters as per Kashier's documentation
+    merchantRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/success`,
+    failureRedirect: `${process.env.NEXT_PUBLIC_APP_URL}/cancel`,
     redirect: 'true',
     display: 'ar',
     mode: 'test',
